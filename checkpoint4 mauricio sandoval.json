@@ -1,0 +1,652 @@
+{
+  "name": "Checkpoint 4 - Tonina Integraciones Avanzadas - Mauricio Sandoval",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# CHECKPOINT 4 — TONINA | Integraciones Avanzadas\n\n**Controles evaluados**\n1. IF anti auto-reply.\n2. HubSpot Look Up antes de alta/actualización.\n3. Gmail Create Draft = HITL.\n4. Set de limpieza antes de CRM/Slack.\n\n**Credenciales a seleccionar tras importar:** Gmail OAuth2, HubSpot OAuth2, Slack API (Bot Token) y OpenAI.\n\nNo hay secretos ni IDs de credenciales embebidos en este JSON.",
+        "height": 330,
+        "width": 620,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        176
+      ],
+      "id": "0fc70194-96b6-40f8-b04f-f1b66d3e338c",
+      "name": "README - Checkpoint 4"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "readStatus": "unread"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        64,
+        704
+      ],
+      "id": "d0166b79-8a21-4a03-839a-ad49c274f495",
+      "name": "Gmail Trigger - Email Entrante"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "90538d8b-135e-4544-a317-a68e001589f8",
+              "leftValue": "={{ $json.Subject || $json.subject || '' }}",
+              "rightValue": "Auto-reply",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "a2b06ca5-5d88-4664-a5a3-d61c5357848f",
+              "leftValue": "={{ $json.Subject || $json.subject || '' }}",
+              "rightValue": "Out of office",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "6cc263b0-c705-4bdf-936a-a528d1eccaee",
+              "leftValue": "={{ $json.Subject || $json.subject || '' }}",
+              "rightValue": "Undeliverable",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "2555c58f-03d2-40fa-b30a-476570cf5a46",
+              "leftValue": "={{ $json.From || $json.from || '' }}",
+              "rightValue": "no-reply@",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "aadf6ea8-24de-40f7-b663-d8f51dfc5e69",
+              "leftValue": "={{ $json.From || $json.from || '' }}",
+              "rightValue": "noreply@",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        704
+      ],
+      "id": "8e5b90a4-1d66-4187-b417-b8b49fea403c",
+      "name": "① IF - Anti Auto-Reply"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        544,
+        544
+      ],
+      "id": "db4d3167-d64d-40e0-b354-a3ae2509a816",
+      "name": "STOP - Correo Automatico Ignorado"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ab7dbc3f-f992-4eaf-94e4-7fae1acaab05",
+              "name": "from_email",
+              "value": "={{ ((($json.From || $json.from || '')).match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i) || [''])[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "1ab60c81-8f94-47fc-a290-492ac96f41c3",
+              "name": "subject",
+              "value": "={{ $json.Subject || $json.subject || '(sin asunto)' }}",
+              "type": "string"
+            },
+            {
+              "id": "88dbbd88-9973-48b5-851f-ba3ce2b080b2",
+              "name": "body_text",
+              "value": "={{ $json.textPlain || $json.text || $json.snippet || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "bf40f6ef-329f-49ec-b8a6-defeae2b865d",
+              "name": "message_id",
+              "value": "={{ $json.id || $json.messageId || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "4ecf48a6-0f33-47c3-906a-5c15e34c98f8",
+              "name": "thread_id",
+              "value": "={{ $json.threadId || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        784
+      ],
+      "id": "b5e266b3-bac8-4c60-a39c-eded428e81b9",
+      "name": "④ Set - Limpia y Valida Payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2a074900-00d3-4ee8-b872-f633aa699875",
+              "leftValue": "={{ $json.from_email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        784,
+        784
+      ],
+      "id": "cc5ee78f-8492-4ee6-8318-c58b1f3dda0d",
+      "name": "IF - Email Remitente Valido"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        944
+      ],
+      "id": "b9ee2738-e1a8-4938-86d3-8a1e247b9439",
+      "name": "STOP - Payload Invalido"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Correo recibido de: {{ $('④ Set - Limpia y Valida Payload').item.json.from_email }}\nAsunto: {{ $('④ Set - Limpia y Valida Payload').item.json.subject }}\n\nMensaje:\n{{ $('④ Set - Limpia y Valida Payload').item.json.body_text }}\n\nRedacta un BORRADOR de respuesta comercial breve, profesional y prudente. No envíes nada. No inventes precios, stock, descuentos, devoluciones ni compromisos. Si requiere excepción comercial, indica revisión humana.",
+        "options": {
+          "systemMessage": "Eres el Agente de Integraciones de Tonina. Gmail es canal de entrada/salida, HubSpot es la fuente de verdad del contacto y Slack es canal interno. Tu salida es solo un BORRADOR para aprobación humana. Nunca afirmes que fue enviado.",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1024,
+        736
+      ],
+      "id": "854a3ebc-be6a-4bb8-85af-1ade73354124",
+      "name": "AI Agent - Tonina Integraciones"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        1056
+      ],
+      "id": "1baacddd-d14e-4579-8151-438d8a697a98",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('④ Set - Limpia y Valida Payload').item.json.from_email }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1232,
+        1008
+      ],
+      "id": "75946d1f-e99a-469a-a9ac-c9a56e8d7577",
+      "name": "Memoria M3 - Por Cliente Email"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "search",
+        "filterGroupsUi": {
+          "filterGroupsValues": [
+            {
+              "filtersUi": {
+                "filterValues": [
+                  {
+                    "propertyName": "email|string",
+                    "value": "={{ $('④ Set - Limpia y Valida Payload').item.json.from_email }}"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        736
+      ],
+      "id": "50efe77e-683a-4a64-91d0-249f60446ca2",
+      "name": "② HubSpot - Look Up Contacto",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f50aa9d7-52df-4b2c-a487-eb6e395a1c05",
+              "leftValue": "={{ $json.id || $json.vid || '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        736
+      ],
+      "id": "09aac110-95a7-45bf-8f15-fe01568d3e95",
+      "name": "IF - Contacto Existe"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $('④ Set - Limpia y Valida Payload').item.json.from_email }}",
+        "additionalFields": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        1808,
+        640
+      ],
+      "id": "53e476fc-0b60-47f2-a84d-d0d5ac8a4f44",
+      "name": "HubSpot - Update Contacto Existente"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $('④ Set - Limpia y Valida Payload').item.json.from_email }}",
+        "additionalFields": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        1808,
+        848
+      ],
+      "id": "7b61be60-a3c4-4893-9afb-3464e84bcf9c",
+      "name": "HubSpot - Create Contacto Nuevo"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "=Re: {{ $('④ Set - Limpia y Valida Payload').item.json.subject }}",
+        "message": "={{ $('AI Agent - Tonina Integraciones').item.json.output }}",
+        "options": {
+          "threadId": "={{ $('④ Set - Limpia y Valida Payload').item.json.thread_id }}",
+          "sendTo": "={{ $('④ Set - Limpia y Valida Payload').item.json.from_email }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2064,
+        736
+      ],
+      "id": "5223ed08-312e-4d93-900c-6bf6ae3ac117",
+      "name": "③ Gmail - Create Draft HITL"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a5d2689e-f981-4632-9856-ac7689cc30e6",
+              "name": "slack_text",
+              "value": "=TONINA | Borrador listo para revisión\nCliente: {{ $('④ Set - Limpia y Valida Payload').item.json.from_email }}\nAsunto: {{ $('④ Set - Limpia y Valida Payload').item.json.subject }}\nEstado: BORRADOR CREADO — requiere aprobación humana.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2304,
+        736
+      ],
+      "id": "3c90412e-89fc-449a-8332-e06a68e1743a",
+      "name": "Set - Payload Minimo para Slack"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "operaciones",
+          "mode": "name"
+        },
+        "text": "={{ $json.slack_text }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        2544,
+        736
+      ],
+      "id": "178d7348-db5b-459a-92d5-26af52decfb2",
+      "name": "Slack - Avisar a Operaciones"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "264c4509-bd11-41ca-8a4f-56272cf60e0f",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "9e4cbab1-a568-45b6-ae74-7b7fceb8f99b",
+              "name": "control_humano",
+              "value": "Borrador creado; no se envio automaticamente.",
+              "type": "string"
+            },
+            {
+              "id": "584add45-6e25-49e2-9770-816c84a54b4f",
+              "name": "crm_control",
+              "value": "Lookup ejecutado antes del alta/actualizacion.",
+              "type": "string"
+            },
+            {
+              "id": "b9b76a72-1141-472d-b078-761924c4d592",
+              "name": "canal_equipo",
+              "value": "Slack notificado con payload minimo.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2784,
+        736
+      ],
+      "id": "4c0ff37d-babb-40d7-a932-2f63e1d7ea6c",
+      "name": "Salida - Checkpoint 4 OK"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger - Email Entrante": {
+      "main": [
+        [
+          {
+            "node": "① IF - Anti Auto-Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "① IF - Anti Auto-Reply": {
+      "main": [
+        [
+          {
+            "node": "STOP - Correo Automatico Ignorado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "④ Set - Limpia y Valida Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "④ Set - Limpia y Valida Payload": {
+      "main": [
+        [
+          {
+            "node": "IF - Email Remitente Valido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Email Remitente Valido": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Tonina Integraciones",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "STOP - Payload Invalido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Tonina Integraciones",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria M3 - Por Cliente Email": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent - Tonina Integraciones",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Tonina Integraciones": {
+      "main": [
+        [
+          {
+            "node": "② HubSpot - Look Up Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "② HubSpot - Look Up Contacto": {
+      "main": [
+        [
+          {
+            "node": "IF - Contacto Existe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Contacto Existe": {
+      "main": [
+        [
+          {
+            "node": "HubSpot - Update Contacto Existente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HubSpot - Create Contacto Nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot - Update Contacto Existente": {
+      "main": [
+        [
+          {
+            "node": "③ Gmail - Create Draft HITL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot - Create Contacto Nuevo": {
+      "main": [
+        [
+          {
+            "node": "③ Gmail - Create Draft HITL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "③ Gmail - Create Draft HITL": {
+      "main": [
+        [
+          {
+            "node": "Set - Payload Minimo para Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Payload Minimo para Slack": {
+      "main": [
+        [
+          {
+            "node": "Slack - Avisar a Operaciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack - Avisar a Operaciones": {
+      "main": [
+        [
+          {
+            "node": "Salida - Checkpoint 4 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "nodeGroups": [],
+  "tags": []
+}
